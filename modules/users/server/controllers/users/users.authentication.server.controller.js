@@ -8,7 +8,10 @@ var _ = require('lodash'),
 	errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
 	mongoose = require('mongoose'),
 	passport = require('passport'),
-	User = mongoose.model('User');
+	User = mongoose.model('User'),
+	jwt = require('jsonwebtoken');
+
+var secret = 'keepitquiet';
 
 /**
  * Signup
@@ -50,24 +53,44 @@ exports.signup = function(req, res) {
 /**
  * Signin after passport authentication
  */
-exports.signin = function(req, res, next) {
-	passport.authenticate('local', function(err, user, info) {
-		if (err || !user) {
-			res.status(400).send(info);
-		} else {
-			// Remove sensitive data before login
-			user.password = undefined;
-			user.salt = undefined;
+//exports.signin = function(req, res, next) {
+//	passport.authenticate('local', function(err, user, info) {
+//		if (err || !user) {
+//			res.status(400).send(info);
+//		} else {
+//			// Remove sensitive data before login
+//			user.password = undefined;
+//			user.salt = undefined;
+//
+//			req.login(user, function(err) {
+//				if (err) {
+//					res.status(400).send(err);
+//				} else {
+//					res.json(user);
+//				}
+//			});
+//		}
+//	})(req, res, next);
+//};
 
-			req.login(user, function(err) {
-				if (err) {
-					res.status(400).send(err);
-				} else {
-					res.json(user);
-				}
-			});
-		}
-	})(req, res, next);
+exports.signin = function(req, res, next) {
+    passport.authenticate('local-token', function(err, user, info) {
+        if (err || !user) {
+            res.status(400).send(info);
+        } else {
+            // Remove sensitive data before login
+            user.password = undefined;
+            user.salt = undefined;
+
+            req.login(user, function(err) {
+                if (err) {
+                    res.status(400).send(err);
+                } else {
+                    res.json(user);
+                }
+            });
+        }
+    })(req, res, next);
 };
 
 /**
@@ -77,6 +100,36 @@ exports.signout = function(req, res) {
 	req.logout();
 	res.redirect('/');
 };
+
+//exports.signout = function(req, res) {
+//    // get login token
+//    var loginToken = req.body.loginToken;
+//
+//    // decode the token to find out which user it came from
+//    var decodedPayload = jwt.decode(loginToken, secret);
+//
+//    var username = decodedPayload.username;
+//    console.log(username);
+//
+//    // remove login token information from user object
+//    User.findOne({username: username}, function(err, user) {
+//        if (err){
+//            res.status(400).send(err);
+//        } else {
+//            user.loginToken = undefined;
+//            user.loginExpires = undefined;
+//
+//            // update the user object in the database
+//            user.save(function(err) {
+//                if(err){
+//                    res.status(400).send(err);
+//                } else {
+//                    res.send({message: username + ' successfully logged out'});
+//                }
+//            });
+//        }
+//    });
+//};
 
 /**
  * OAuth callback

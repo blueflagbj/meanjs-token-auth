@@ -18,7 +18,8 @@ var config = require('../config'),
 	passport = require('passport'),
 	flash = require('connect-flash'),
 	consolidate = require('consolidate'),
-	path = require('path');
+	path = require('path'),
+	cors = require('cors');
 
 /**
  * Initialize local variables
@@ -79,6 +80,26 @@ module.exports.initMiddleware = function (app) {
 	}));
 	app.use(bodyParser.json());
 	app.use(methodOverride());
+
+	// Add Cross-origin resource sharing (CORS)
+	app.use(cors());
+	app.use(function (req, res, next) {
+			// Website you wish to allow to connect
+			res.setHeader('Access-Control-Allow-Origin', '*');
+
+			// Request methods you wish to allow
+			res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+
+			// Request headers you wish to allow
+			res.setHeader('Access-Control-Allow-Headers', 'origin, x-requested-with, content-type, accept, x-xsrf-token');
+
+			// Set to true if you need the website to include cookies in the requests sent
+			// to the API (e.g. in case you use sessions)
+			res.setHeader('Access-Control-Allow-Credentials', true);
+
+			// Pass to next layer of middleware
+			next();
+	});
 
 	// Add the cookie parser and flash middleware
 	app.use(cookieParser());

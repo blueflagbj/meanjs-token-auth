@@ -86,6 +86,13 @@ var UserSchema = new Schema({
 		type: Date,
 		default: Date.now
 	},
+ 	/* For user login */
+	loginToken: {
+ 		type: String
+	},
+	loginExpires: {
+		type: Date
+	},
 	/* For reset password */
 	resetPasswordToken: {
 		type: String
@@ -100,8 +107,10 @@ var UserSchema = new Schema({
  */
 UserSchema.pre('save', function(next) {
 	if (this.password && this.password.length > 6) {
-		this.salt = new Buffer(crypto.randomBytes(16).toString('base64'), 'base64');
-		this.password = this.hashPassword(this.password);
+		if (!this.salt) {
+			this.salt = new Buffer(crypto.randomBytes(16).toString('base64'), 'base64');
+			this.password = this.hashPassword(this.password);
+        	}
 	}
 
 	next();
